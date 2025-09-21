@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomofocus Clone</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d95550">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; }
+        .btn-shadow { box-shadow: rgba(0, 0, 0, 0.15) 0px 6px 0px; }
+        .btn-shadow:active { transform: translateY(3px); box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 0px; }
+        .transition-all { transition: all 0.3s ease-in-out; }
+        .chart-bar { background-color: rgba(255, 255, 255, 0.3); border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-[#d95550] transition-all">
+
+    <div id="app" class="max-w-xl mx-auto p-4 text-white">
+        <!-- Header -->
+        <header class="flex justify-between items-center py-4 border-b border-white/20">
+            <div class="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <h1 class="text-xl font-bold">Pomofocus</h1>
+            </div>
+            <div class="flex space-x-2">
+                <button id="report-btn" class="bg-white/20 hover:bg-white/30 p-2 rounded-md flex items-center space-x-2 font-semibold">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    <span>Report</span>
+                </button>
+                <button id="settings-btn" class="bg-white/20 hover:bg-white/30 p-2 rounded-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <div id="main-content">
+            <div class="bg-white/10 p-6 rounded-lg my-6">
+                <div class="flex justify-center space-x-2 md:space-x-4 mb-4">
+                    <button id="mode-pomodoro" class="px-3 py-1 rounded font-semibold bg-white/30">Pomodoro</button>
+                    <button id="mode-short" class="px-3 py-1 rounded font-semibold opacity-80 hover:opacity-100">Short Break</button>
+                    <button id="mode-long" class="px-3 py-1 rounded font-semibold opacity-80 hover:opacity-100">Long Break</button>
+                </div>
+                <div id="timer-display" class="text-8xl md:text-9xl font-bold text-center my-6">25:00</div>
+                <div class="flex justify-center">
+                    <button id="start-btn" class="w-full md:w-3/4 text-2xl font-bold py-4 rounded-lg bg-white text-[#d95550] uppercase tracking-wider btn-shadow transform">Start</button>
+                </div>
+            </div>
+            <p id="current-task" class="text-center font-bold text-lg h-7">Time to focus!</p>
+            <div class="mt-8">
+                <div class="flex justify-between items-center border-b-2 border-white/30 pb-2">
+                    <h2 class="text-lg font-bold">Tasks</h2>
+                    <button id="add-task-btn" class="bg-white/20 p-2 rounded-md hover:bg-white/30"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                </div>
+                <div id="task-list" class="mt-4 space-y-3"></div>
+                <div id="add-task-form" class="hidden mt-3 bg-white p-4 rounded-lg">
+                    <input id="task-input" type="text" placeholder="What are you working on?" class="w-full bg-gray-100 text-gray-800 p-3 rounded-md border-2 border-gray-200 focus:outline-none focus:border-gray-400">
+                    <div class="flex justify-end space-x-2 mt-3">
+                        <button id="cancel-task-btn" class="text-gray-600 font-semibold px-4 py-2 rounded-md">Cancel</button>
+                        <button id="save-task-btn" class="bg-gray-800 text-white font-semibold px-4 py-2 rounded-md">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODALS SECTION -->
+    <div id="pre-session-modal" class="fixed inset-0 bg-black/70 hidden justify-center items-center z-50 p-4">
+        <div class="bg-white text-gray-800 rounded-lg w-full max-w-lg flex flex-col h-full max-h-[90vh]">
+            <div class="p-4 border-b flex-shrink-0"><h3 class="text-lg font-bold">Welcome! Please fill this form to start.</h3></div>
+            <div class="flex-grow overflow-y-auto"><iframe class="w-full h-full border-none" src="https://docs.google.com/forms/d/e/1FAIpQLSepEJ_BN4XmNV4eGkovGPy9O3uKrL6FvvMOlMjArNDsd2oWBA/viewform?embedded=true">Loading…</iframe></div>
+            <div class="p-4 bg-gray-50 flex justify-end flex-shrink-0"><button id="continue-app-btn" class="bg-gray-800 text-white font-bold px-6 py-2 rounded-md">Continue to App</button></div>
+        </div>
+    </div>
+    <div id="post-session-modal" class="fixed inset-0 bg-black/70 hidden justify-center items-center z-50 p-4">
+        <div class="bg-white text-gray-800 rounded-lg w-full max-w-lg flex flex-col h-full max-h-[90vh]">
+            <div class="p-4 border-b flex-shrink-0"><h3 class="text-lg font-bold">Great session! Please fill this form.</h3></div>
+            <div class="flex-grow overflow-y-auto"><iframe class="w-full h-full border-none" src="https://docs.google.com/forms/d/e/1FAIpQLSeId0wzCnN4x0Ds8ktLkZtMbeeH1oCrXJCNztF-BhmMChKdZg/viewform?embedded=true">Loading…</iframe></div>
+            <div class="p-4 bg-gray-50 flex justify-end flex-shrink-0"><button id="start-break-btn" class="bg-[#38858f] text-white font-bold px-6 py-2 rounded-md">Start Break</button></div>
+        </div>
+    </div>
+    <div id="report-modal" class="fixed inset-0 bg-black/70 hidden justify-center items-center z-50 p-4">
+         <div class="bg-white text-gray-800 p-6 rounded-lg w-full max-w-2xl h-full max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3 mb-4 flex-shrink-0">
+                <h3 class="text-xl font-bold">Activity Summary</h3>
+                <button id="close-report-btn" class="text-gray-500 font-bold text-2xl">&times;</button>
+            </div>
+            <div class="flex-grow overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-red-50 p-4 rounded-lg text-center"><p class="text-sm text-red-500 font-semibold">Hours Focused</p><p id="hours-focused" class="text-3xl font-bold text-red-800 mt-1">0.0</p></div>
+                    <div class="bg-blue-50 p-4 rounded-lg text-center"><p class="text-sm text-blue-500 font-semibold">Days Accessed</p><p id="days-accessed" class="text-3xl font-bold text-blue-800 mt-1">0</p></div>
+                    <div class="bg-yellow-50 p-4 rounded-lg text-center"><p class="text-sm text-yellow-500 font-semibold">Day Streak</p><p id="day-streak" class="text-3xl font-bold text-yellow-800 mt-1">0</p></div>
+                </div>
+                <h4 class="text-lg font-bold mb-4">Focus Hours This Week</h4>
+                <div id="focus-chart-container" class="w-full h-64 bg-gray-50 p-4 rounded-lg flex justify-around items-end space-x-2"></div>
+            </div>
+        </div>
+    </div>
+    <div id="settings-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-40">
+        <div class="bg-white text-gray-800 p-6 rounded-lg w-11/12 max-w-sm">
+            <div class="flex justify-between items-center border-b pb-3"><h3 class="text-lg font-bold">Timer Settings</h3><button id="close-settings-btn" class="text-gray-500 font-bold text-2xl">&times;</button></div>
+            <div class="mt-4"><p class="font-semibold mb-2">Time (minutes)</p><div class="grid grid-cols-3 gap-4"><div><label for="pomodoro-duration" class="text-sm text-gray-500">Pomodoro</label><input type="number" id="pomodoro-duration" class="w-full bg-gray-100 p-2 rounded mt-1" value="25"></div><div><label for="short-duration" class="text-sm text-gray-500">Short Break</label><input type="number" id="short-duration" class="w-full bg-gray-100 p-2 rounded mt-1" value="5"></div><div><label for="long-duration" class="text-sm text-gray-500">Long Break</label><input type="number" id="long-duration" class="w-full bg-gray-100 p-2 rounded mt-1" value="15"></div></div></div>
+            <div class="mt-6 flex justify-end"><button id="save-settings-btn" class="bg-gray-800 text-white font-bold px-6 py-2 rounded-md">OK</button></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM ELEMENTS ---
+            const dom = {
+                timerDisplay: document.getElementById('timer-display'), startBtn: document.getElementById('start-btn'), modePomodoroBtn: document.getElementById('mode-pomodoro'), modeShortBtn: document.getElementById('mode-short'), modeLongBtn: document.getElementById('mode-long'), addTaskBtn: document.getElementById('add-task-btn'), addTaskForm: document.getElementById('add-task-form'), taskInput: document.getElementById('task-input'), cancelTaskBtn: document.getElementById('cancel-task-btn'), saveTaskBtn: document.getElementById('save-task-btn'), taskListContainer: document.getElementById('task-list'), currentTaskDisplay: document.getElementById('current-task'), settingsBtn: document.getElementById('settings-btn'), settingsModal: document.getElementById('settings-modal'), closeSettingsBtn: document.getElementById('close-settings-btn'), saveSettingsBtn: document.getElementById('save-settings-btn'), pomodoroDurationInput: document.getElementById('pomodoro-duration'), shortDurationInput: document.getElementById('short-duration'), longDurationInput: document.getElementById('long-duration'), 
+                preSessionModal: document.getElementById('pre-session-modal'), continueAppBtn: document.getElementById('continue-app-btn'), postSessionModal: document.getElementById('post-session-modal'), startBreakBtn: document.getElementById('start-break-btn'), 
+                reportBtn: document.getElementById('report-btn'), reportModal: document.getElementById('report-modal'), closeReportBtn: document.getElementById('close-report-btn'), hoursFocused: document.getElementById('hours-focused'), daysAccessed: document.getElementById('days-accessed'), dayStreak: document.getElementById('day-streak'), focusChartContainer: document.getElementById('focus-chart-container')
+            };
+
+            // --- STATE MANAGEMENT ---
+            let timerInterval; let tasks = JSON.parse(localStorage.getItem('tasks')) || []; let currentTaskId = null; let currentMode = 'pomodoro'; let isRunning = false; let settings = JSON.parse(localStorage.getItem('settings')) || { pomodoro: 25, short: 5, long: 15 }; let timeLeft = settings.pomodoro * 60;
+            let history = JSON.parse(localStorage.getItem('pomodoroHistory')) || [];
+
+            // --- THEME LOGIC ---
+            const themes = {
+                pomodoro: { bg: 'bg-[#d95550]', btnText: 'text-[#d95550]', bodyClass: 'bg-[#d95550]' },
+                short: { bg: 'bg-[#38858f]', btnText: 'text-[#38858f]', bodyClass: 'bg-[#38858f]' },
+                long: { bg: 'bg-[#397097]', btnText: 'text-[#397097]', bodyClass: 'bg-[#397097]' }
+            };
+
+            function updateTheme() {
+                const theme = themes[currentMode]; document.body.className = `transition-all ${theme.bodyClass}`;
+                dom.startBtn.className = `w-full md:w-3/4 text-2xl font-bold py-4 rounded-lg bg-white uppercase tracking-wider btn-shadow transform ${theme.btnText}`;
+                [dom.modePomodoroBtn, dom.modeShortBtn, dom.modeLongBtn].forEach(btn => {btn.classList.remove('bg-white/30', 'opacity-80', 'hover:opacity-100');});
+                const activeBtn = {pomodoro: dom.modePomodoroBtn, short: dom.modeShortBtn, long: dom.modeLongBtn}[currentMode];
+                const inactiveBtns = [dom.modePomodoroBtn, dom.modeShortBtn, dom.modeLongBtn].filter(b => b !== activeBtn);
+                activeBtn.classList.add('bg-white/30');
+                inactiveBtns.forEach(b => b.classList.add('opacity-80', 'hover:opacity-100'));
+            }
+
+            // --- TIMER LOGIC ---
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeLeft / 60); const seconds = timeLeft % 60;
+                dom.timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                document.title = `${dom.timerDisplay.textContent} - Time to focus!`;
+            }
+            function handleTimerEnd() {
+                clearInterval(timerInterval); playSound();
+                if (currentMode === 'pomodoro') {
+                    history.push({ timestamp: new Date().toISOString(), duration: settings.pomodoro });
+                    localStorage.setItem('pomodoroHistory', JSON.stringify(history));
+                    dom.postSessionModal.classList.remove('hidden'); dom.postSessionModal.classList.add('flex');
+                } else { switchMode('pomodoro'); }
+            }
+            function startTimer() { if(timeLeft <= 0) return; isRunning = true; dom.startBtn.textContent = 'Pause'; timerInterval = setInterval(() => { timeLeft--; updateTimerDisplay(); if (timeLeft <= 0) { handleTimerEnd(); } }, 1000); }
+            function pauseTimer() { isRunning = false; dom.startBtn.textContent = 'Start'; clearInterval(timerInterval); }
+            function resetTimer() { pauseTimer(); timeLeft = settings[currentMode] * 60; updateTimerDisplay(); }
+            function switchMode(mode) { currentMode = mode; resetTimer(); updateTheme(); }
+            
+            // --- TASK MANAGEMENT ---
+            function renderTasks() {
+                dom.taskListContainer.innerHTML = '';
+                if(tasks.length === 0) { dom.taskListContainer.innerHTML = `<div class="text-center text-white/70 bg-white/10 p-4 rounded-lg">No tasks yet.</div>`; return; }
+                tasks.forEach(task => {
+                    const taskEl = document.createElement('div');
+                    taskEl.className = `flex items-center justify-between bg-white p-4 rounded-lg text-gray-800 shadow-md ${task.id === currentTaskId ? 'ring-2 ring-gray-800' : ''}`;
+                    taskEl.dataset.id = task.id;
+                    taskEl.innerHTML = `<div class="flex items-center space-x-3 cursor-pointer flex-grow" onclick="selectTask(${task.id})"><button class="task-check ${task.completed ? 'bg-green-500 border-green-500' : 'border-gray-300'} border-2 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">${task.completed ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}</button><span class="${task.completed ? 'line-through text-gray-400' : ''}">${task.text}</span></div>`;
+                    taskEl.querySelector('.task-check').addEventListener('click', (e) => { e.stopPropagation(); toggleTaskCompletion(task.id); });
+                    dom.taskListContainer.appendChild(taskEl);
+                });
+            }
+            window.selectTask = (id) => { currentTaskId = id; const selectedTask = tasks.find(t => t.id === id); dom.currentTaskDisplay.textContent = selectedTask ? selectedTask.text : 'Time to focus!'; renderTasks(); }
+            function toggleTaskCompletion(id) { tasks = tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task); localStorage.setItem('tasks', JSON.stringify(tasks)); renderTasks(); }
+            function showTaskForm() { dom.addTaskForm.classList.remove('hidden'); dom.addTaskBtn.classList.add('hidden'); dom.taskInput.focus(); }
+            function hideTaskForm() { dom.addTaskForm.classList.add('hidden'); dom.addTaskBtn.classList.remove('hidden'); dom.taskInput.value = ''; }
+            function addTask() { const text = dom.taskInput.value.trim(); if(text) { const newTask = { id: Date.now(), text, completed: false }; tasks.push(newTask); localStorage.setItem('tasks', JSON.stringify(tasks)); if (!currentTaskId) selectTask(newTask.id); renderTasks(); hideTaskForm(); } }
+
+            // --- SETTINGS LOGIC ---
+            function openSettings() { dom.pomodoroDurationInput.value = settings.pomodoro; dom.shortDurationInput.value = settings.short; dom.longDurationInput.value = settings.long; dom.settingsModal.classList.remove('hidden'); dom.settingsModal.classList.add('flex'); }
+            function closeSettings() { dom.settingsModal.classList.add('hidden'); dom.settingsModal.classList.remove('flex'); }
+            function saveSettings() { settings.pomodoro = parseInt(dom.pomodoroDurationInput.value, 10) || 25; settings.short = parseInt(dom.shortDurationInput.value, 10) || 5; settings.long = parseInt(dom.longDurationInput.value, 10) || 15; localStorage.setItem('settings', JSON.stringify(settings)); closeSettings(); switchMode(currentMode); }
+
+            // --- REPORTING LOGIC ---
+            function updateReport() {
+                const totalMinutes = history.reduce((sum, record) => sum + record.duration, 0);
+                dom.hoursFocused.textContent = (totalMinutes / 60).toFixed(1);
+
+                const uniqueDays = new Set(history.map(record => record.timestamp.split('T')[0]));
+                dom.daysAccessed.textContent = uniqueDays.size;
+
+                const stats = JSON.parse(localStorage.getItem('userStats')) || { streak: 0, lastLogin: ''};
+                dom.dayStreak.textContent = stats.streak;
+                
+                generateFocusChart();
+            }
+            function generateFocusChart() {
+                const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const weeklyData = new Array(7).fill(0);
+                const today = new Date();
+                const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+
+                history.forEach(record => {
+                    const recordDate = new Date(record.timestamp);
+                    if (recordDate >= firstDayOfWeek) {
+                        weeklyData[recordDate.getDay()] += record.duration;
+                    }
+                });
+
+                const maxMinutes = Math.max(...weeklyData);
+                dom.focusChartContainer.innerHTML = '';
+
+                dayLabels.forEach((day, index) => {
+                    const minutes = weeklyData[index];
+                    const barHeight = maxMinutes > 0 ? (minutes / maxMinutes) * 100 : 0;
+                    const barEl = document.createElement('div');
+                    barEl.className = 'flex flex-col items-center justify-end h-full w-1/7';
+                    barEl.innerHTML = `<div class="chart-bar w-3/4" style="height: ${barHeight}%"></div><p class="text-xs text-gray-500 mt-2">${day}</p>`;
+                    dom.focusChartContainer.appendChild(barEl);
+                });
+            }
+            
+            // --- AUDIO & INIT ---
+            function playSound() { const synth = new Tone.Synth().toDestination(); synth.triggerAttackRelease("C5", "0.5"); }
+            function initializeApp() {
+                if (localStorage.getItem('preSessionFormCompleted') !== 'true') { dom.preSessionModal.classList.remove('hidden'); dom.preSessionModal.classList.add('flex'); }
+                
+                const todayStr = new Date().toISOString().split('T')[0];
+                const stats = JSON.parse(localStorage.getItem('userStats')) || { streak: 0, lastLogin: ''};
+                if (stats.lastLogin !== todayStr) {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayStr = yesterday.toISOString().split('T')[0];
+                    if (stats.lastLogin === yesterdayStr) {
+                        stats.streak++;
+                    } else {
+                        stats.streak = 1;
+                    }
+                    stats.lastLogin = todayStr;
+                    localStorage.setItem('userStats', JSON.stringify(stats));
+                }
+                switchMode('pomodoro'); renderTasks();
+            }
+
+            // --- EVENT LISTENERS ---
+            dom.startBtn.addEventListener('click', () => isRunning ? pauseTimer() : startTimer());
+            dom.modePomodoroBtn.addEventListener('click', () => switchMode('pomodoro'));
+            dom.modeShortBtn.addEventListener('click', () => switchMode('short'));
+            dom.modeLongBtn.addEventListener('click', () => switchMode('long'));
+            dom.addTaskBtn.addEventListener('click', showTaskForm);
+            dom.cancelTaskBtn.addEventListener('click', hideTaskForm);
+            dom.saveTaskBtn.addEventListener('click', addTask);
+            dom.taskInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTask(); });
+            dom.settingsBtn.addEventListener('click', openSettings);
+            dom.closeSettingsBtn.addEventListener('click', closeSettings);
+            dom.saveSettingsBtn.addEventListener('click', saveSettings);
+            dom.continueAppBtn.addEventListener('click', () => { dom.preSessionModal.classList.add('hidden'); localStorage.setItem('preSessionFormCompleted', 'true'); });
+            dom.startBreakBtn.addEventListener('click', () => { dom.postSessionModal.classList.add('hidden'); switchMode('short'); });
+            dom.reportBtn.addEventListener('click', () => { updateReport(); dom.reportModal.classList.remove('hidden'); dom.reportModal.classList.add('flex'); });
+            dom.closeReportBtn.addEventListener('click', () => dom.reportModal.classList.add('hidden'));
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
+
