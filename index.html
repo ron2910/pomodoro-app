@@ -11,12 +11,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+
     <style>
         body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; }
         .btn-shadow { box-shadow: rgba(0, 0, 0, 0.15) 0px 6px 0px; }
         .btn-shadow:active { transform: translateY(3px); box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 0px; }
         .transition-all { transition: all 0.3s ease-in-out; }
         .chart-bar { background-color: rgba(255, 255, 255, 0.3); border-radius: 4px; }
+        .toggle-checkbox:checked { right: 0; border-color: #4A90E2; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #4A90E2; }
+        .divider::before, .divider::after { content: ''; flex: 1 1; border-bottom: 1px solid #e5e7eb; }
+        .hidden { display: none; }
     </style>
 </head>
 <body class="bg-[#d95550] transition-all">
@@ -28,13 +38,21 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                 <h1 class="text-xl font-bold">Pomofocus</h1>
             </div>
-            <div class="flex space-x-2">
+            <div id="header-buttons" class="flex space-x-2">
                 <button id="report-btn" class="bg-white/20 hover:bg-white/30 p-2 rounded-md flex items-center space-x-2 font-semibold">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                     <span>Report</span>
                 </button>
                 <button id="settings-btn" class="bg-white/20 hover:bg-white/30 p-2 rounded-md">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+                 <button id="sign-in-btn" class="bg-white/20 hover:bg-white/30 p-2 rounded-md flex items-center space-x-2 font-semibold">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <span>Sign In</span>
+                </button>
+                 <button id="logout-btn" class="hidden bg-white/20 hover:bg-white/30 p-2 rounded-md flex items-center space-x-2 font-semibold">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <span>Log out</span>
                 </button>
             </div>
         </header>
@@ -70,6 +88,43 @@
         </div>
     </div>
     
+    <!-- LOGIN PAGE -->
+    <div id="login-page" class="hidden min-h-screen flex flex-col items-center justify-center p-4 text-white">
+        <button id="close-login-btn" class="absolute top-4 right-4 text-white/50 hover:text-white text-3xl">&times;</button>
+        <div class="text-center mb-6">
+            <div class="flex items-center justify-center space-x-2 text-2xl font-bold">
+                 <div class="w-8 h-8 bg-white rounded-md flex items-center justify-center">
+                    <svg class="text-[#d95550]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <h1>Pomofocus</h1>
+            </div>
+        </div>
+        <div class="bg-white text-gray-800 p-8 rounded-lg shadow-lg w-full max-w-sm">
+            <h2 id="auth-title" class="text-xl font-bold text-center mb-6">Create Account</h2>
+            <div id="auth-error" class="hidden text-red-500 text-sm text-center mb-4"></div>
+            <button id="google-signin-btn" class="w-full flex items-center justify-center space-x-2 py-2.5 border rounded-md font-semibold hover:bg-gray-50 mb-4">
+                <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.99,34.556,44,29.865,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+                <span>Signup with Google</span>
+            </button>
+            <div class="flex items-center text-sm text-gray-400 my-4 divider">or</div>
+            <div class="space-y-4">
+                <div>
+                    <label for="email" class="text-sm font-semibold text-gray-600">EMAIL</label>
+                    <input type="email" id="email" class="w-full mt-1 p-2 bg-gray-100 rounded-md border focus:outline-none focus:ring-2 focus:ring-gray-300" placeholder="example@mail.com">
+                </div>
+                 <div>
+                    <label for="password" class="text-sm font-semibold text-gray-600">PASSWORD</label>
+                    <input type="password" id="password" class="w-full mt-1 p-2 bg-gray-100 rounded-md border focus:outline-none focus:ring-2 focus:ring-gray-300" placeholder="at least 6 characters">
+                </div>
+                <button id="email-auth-btn" class="w-full py-2.5 bg-gray-800 text-white font-semibold rounded-md hover:bg-gray-700">Sign up with Email</button>
+            </div>
+            <p class="text-center text-sm mt-6">
+                <span id="auth-prompt-text">Already have an account?</span>
+                <a href="#" id="auth-toggle-link" class="font-semibold text-gray-700 hover:underline">Log in</a>
+            </p>
+        </div>
+    </div>
+
     <!-- MODALS SECTION -->
     <div id="pre-session-modal" class="fixed inset-0 bg-black/70 hidden justify-center items-center z-50 p-4">
         <div class="bg-white text-gray-800 rounded-lg w-full max-w-lg flex flex-col h-full max-h-[90vh]">
@@ -102,26 +157,243 @@
             </div>
         </div>
     </div>
-    <div id="settings-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-40">
-        <div class="bg-white text-gray-800 p-6 rounded-lg w-11/12 max-w-sm">
-            <div class="flex justify-between items-center border-b pb-3"><h3 class="text-lg font-bold">Timer Settings</h3><button id="close-settings-btn" class="text-gray-500 font-bold text-2xl">&times;</button></div>
-            <div class="mt-4"><p class="font-semibold mb-2">Time (minutes)</p><div class="grid grid-cols-3 gap-4"><div><label for="pomodoro-duration" class="text-sm text-gray-500">Pomodoro</label><input type="number" id="pomodoro-duration" class="w-full bg-gray-100 p-2 rounded mt-1" value="25"></div><div><label for="short-duration" class="text-sm text-gray-500">Short Break</label><input type="number" id="short-duration" class="w-full bg-gray-100 p-2 rounded mt-1" value="5"></div><div><label for="long-duration" class="text-sm text-gray-500">Long Break</label><input type="number" id="long-duration" class="w-full bg-gray-100 p-2 rounded mt-1" value="15"></div></div></div>
-            <div class="mt-6 flex justify-end"><button id="save-settings-btn" class="bg-gray-800 text-white font-bold px-6 py-2 rounded-md">OK</button></div>
+    <div id="settings-modal" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-40 p-4">
+        <div class="bg-white text-gray-800 rounded-lg w-full max-w-md h-full max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b flex-shrink-0">
+                <h3 class="text-lg font-bold text-gray-600">Settings</h3>
+                <button id="close-settings-btn" class="text-gray-500 font-bold text-2xl">&times;</button>
+            </div>
+            <div class="p-6 flex-grow overflow-y-auto space-y-6">
+                <!-- Timer Settings -->
+                <div>
+                    <h4 class="font-bold text-gray-500 border-b pb-2 mb-4">TIMER</h4>
+                    <p class="font-semibold mb-2 text-gray-700">Time (minutes)</p>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div><label for="pomodoro-duration" class="text-sm text-gray-500">Pomodoro</label><input type="number" id="pomodoro-duration" class="w-full bg-gray-100 p-2 rounded mt-1" value="25"></div>
+                        <div><label for="short-duration" class="text-sm text-gray-500">Short Break</label><input type="number" id="short-duration" class="w-full bg-gray-100 p-2 rounded mt-1" value="5"></div>
+                        <div><label for="long-duration" class="text-sm text-gray-500">Long Break</label><input type="number" id="long-duration" class="w-full bg-gray-100 p-2 rounded mt-1" value="15"></div>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                        <label for="auto-start-breaks" class="text-gray-700 font-semibold">Auto Start Breaks</label>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="auto-start-breaks" id="auto-start-breaks" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                            <label for="auto-start-breaks" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                        <label for="auto-start-pomodoros" class="text-gray-700 font-semibold">Auto Start Pomodoros</label>
+                         <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="auto-start-pomodoros" id="auto-start-pomodoros" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                            <label for="auto-start-pomodoros" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                        <label for="long-break-interval" class="text-gray-700 font-semibold">Long Break interval</label>
+                        <input type="number" id="long-break-interval" class="w-20 bg-gray-100 p-2 rounded text-center" value="4">
+                    </div>
+                </div>
+                 <!-- Sound Settings -->
+                <div>
+                    <h4 class="font-bold text-gray-500 border-b pb-2 mb-4">SOUND</h4>
+                    <div class="flex justify-between items-center mt-4">
+                        <label for="alarm-sound" class="text-gray-700 font-semibold">Alarm Sound</label>
+                        <select id="alarm-sound" class="bg-gray-100 p-2 rounded">
+                            <option value="bell">Bell</option>
+                            <option value="bird">Bird</option>
+                            <option value="digital">Digital</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-100 flex justify-end flex-shrink-0">
+                <button id="save-settings-btn" class="bg-gray-800 text-white font-bold px-6 py-2 rounded-md">OK</button>
+            </div>
         </div>
     </div>
 
     <script>
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDO3laFE1dwDap9cXqhx9Q-3899sxe1iEw",
+            authDomain: "pomofocus-62adb.firebaseapp.com",
+            projectId: "pomofocus-62adb",
+            storageBucket: "pomofocus-62adb.appspot.com",
+            messagingSenderId: "536995709007",
+            appId: "1:536995709007:web:5824d99069516af0d1aa3a",
+            measurementId: "G-P6KQLKT2DY"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM ELEMENTS ---
             const dom = {
+                appContainer: document.getElementById('app'),
+                loginPage: document.getElementById('login-page'),
+                signInBtn: document.getElementById('sign-in-btn'),
+                logoutBtn: document.getElementById('logout-btn'),
+                closeLoginBtn: document.getElementById('close-login-btn'),
+                authTitle: document.getElementById('auth-title'),
+                emailAuthBtn: document.getElementById('email-auth-btn'),
+                authPromptText: document.getElementById('auth-prompt-text'),
+                authToggleLink: document.getElementById('auth-toggle-link'),
+                googleSigninBtn: document.getElementById('google-signin-btn'),
+                emailInput: document.getElementById('email'),
+                passwordInput: document.getElementById('password'),
+                authError: document.getElementById('auth-error'),
+
                 timerDisplay: document.getElementById('timer-display'), startBtn: document.getElementById('start-btn'), modePomodoroBtn: document.getElementById('mode-pomodoro'), modeShortBtn: document.getElementById('mode-short'), modeLongBtn: document.getElementById('mode-long'), addTaskBtn: document.getElementById('add-task-btn'), addTaskForm: document.getElementById('add-task-form'), taskInput: document.getElementById('task-input'), cancelTaskBtn: document.getElementById('cancel-task-btn'), saveTaskBtn: document.getElementById('save-task-btn'), taskListContainer: document.getElementById('task-list'), currentTaskDisplay: document.getElementById('current-task'), settingsBtn: document.getElementById('settings-btn'), settingsModal: document.getElementById('settings-modal'), closeSettingsBtn: document.getElementById('close-settings-btn'), saveSettingsBtn: document.getElementById('save-settings-btn'), pomodoroDurationInput: document.getElementById('pomodoro-duration'), shortDurationInput: document.getElementById('short-duration'), longDurationInput: document.getElementById('long-duration'), 
+                autoStartBreaksInput: document.getElementById('auto-start-breaks'), autoStartPomodorosInput: document.getElementById('auto-start-pomodoros'), longBreakIntervalInput: document.getElementById('long-break-interval'), alarmSoundInput: document.getElementById('alarm-sound'),
                 preSessionModal: document.getElementById('pre-session-modal'), continueAppBtn: document.getElementById('continue-app-btn'), postSessionModal: document.getElementById('post-session-modal'), startBreakBtn: document.getElementById('start-break-btn'), 
                 reportBtn: document.getElementById('report-btn'), reportModal: document.getElementById('report-modal'), closeReportBtn: document.getElementById('close-report-btn'), hoursFocused: document.getElementById('hours-focused'), daysAccessed: document.getElementById('days-accessed'), dayStreak: document.getElementById('day-streak'), focusChartContainer: document.getElementById('focus-chart-container')
             };
 
             // --- STATE MANAGEMENT ---
-            let timerInterval; let tasks = JSON.parse(localStorage.getItem('tasks')) || []; let currentTaskId = null; let currentMode = 'pomodoro'; let isRunning = false; let settings = JSON.parse(localStorage.getItem('settings')) || { pomodoro: 25, short: 5, long: 15 }; let timeLeft = settings.pomodoro * 60;
-            let history = JSON.parse(localStorage.getItem('pomodoroHistory')) || [];
+            let isLoginView = false;
+            let timerInterval; 
+            let tasks = []; 
+            let currentTaskId = null; 
+            let currentMode = 'pomodoro'; 
+            let isRunning = false;
+            let settings = { pomodoro: 25, short: 5, long: 15, autoStartBreaks: false, autoStartPomodoros: false, longBreakInterval: 4, alarmSound: 'bell' };
+            let timeLeft = settings.pomodoro * 60;
+            let history = [];
+            let pomodorosSinceLongBreak = 0;
+            let currentUser = null;
+            let unsubscribe; // To detach Firestore listener
+
+            // --- AUTHENTICATION LOGIC ---
+            auth.onAuthStateChanged(async user => {
+                if (user) {
+                    // User is signed in.
+                    currentUser = user;
+                    await loadUserData();
+                    dom.signInBtn.classList.add('hidden');
+                    dom.logoutBtn.classList.remove('hidden');
+                    hideLoginPage();
+                } else {
+                    // User is signed out.
+                    currentUser = null;
+                    if(unsubscribe) unsubscribe(); // Detach old listener
+                    loadLocalData(); // Load data from localStorage for guests
+                    dom.signInBtn.classList.remove('hidden');
+                    dom.logoutBtn.classList.add('hidden');
+                }
+                initializeAppUI();
+            });
+
+            const showAuthError = (message) => {
+                dom.authError.textContent = message;
+                dom.authError.classList.remove('hidden');
+            }
+
+            const signInWithGoogle = () => {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                auth.signInWithPopup(provider).catch(error => showAuthError(error.message));
+            };
+
+            const handleEmailAuth = () => {
+                const email = dom.emailInput.value;
+                const password = dom.passwordInput.value;
+                dom.authError.classList.add('hidden');
+
+                if (isLoginView) {
+                    // Login
+                    auth.signInWithEmailAndPassword(email, password)
+                        .catch(error => showAuthError(error.message));
+                } else {
+                    // Sign up
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .catch(error => showAuthError(error.message));
+                }
+            };
+            
+            const logOut = () => {
+                auth.signOut();
+            }
+
+            // --- DATA MANAGEMENT (FIRESTORE & LOCALSTORAGE) ---
+            const getUserDocRef = () => db.collection('users').doc(currentUser.uid);
+
+            const loadUserData = async () => {
+                const docRef = getUserDocRef();
+                // Detach previous listener if it exists
+                if (unsubscribe) unsubscribe();
+
+                unsubscribe = docRef.onSnapshot(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        tasks = data.tasks || [];
+                        history = data.history || [];
+                        // merge settings, keeping defaults for missing fields
+                        const defaultSettings = { pomodoro: 25, short: 5, long: 15, autoStartBreaks: false, autoStartPomodoros: false, longBreakInterval: 4, alarmSound: 'bell' };
+                        settings = { ...defaultSettings, ...data.settings };
+                    } else {
+                        // First time login, use defaults and save them
+                        saveDataToFirestore({ tasks: [], history: [], settings });
+                    }
+                    initializeAppUI();
+                });
+            };
+
+            const loadLocalData = () => {
+                 tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+                 history = JSON.parse(localStorage.getItem('pomodoroHistory')) || [];
+                 const localSettings = JSON.parse(localStorage.getItem('settings'));
+                 const defaultSettings = { pomodoro: 25, short: 5, long: 15, autoStartBreaks: false, autoStartPomodoros: false, longBreakInterval: 4, alarmSound: 'bell' };
+                 if (localSettings) {
+                    settings = {...defaultSettings, ...localSettings};
+                 } else {
+                    settings = defaultSettings;
+                 }
+            };
+            
+            const saveData = () => {
+                const data = {
+                    tasks,
+                    history,
+                    settings
+                };
+                if (currentUser) {
+                    saveDataToFirestore(data);
+                } else {
+                    saveDataToLocalStorage(data);
+                }
+            }
+            
+            const saveDataToFirestore = (data) => {
+                 const docRef = getUserDocRef();
+                 docRef.set(data, { merge: true }).catch(err => console.error("Error saving to Firestore:", err));
+            }
+
+            const saveDataToLocalStorage = (data) => {
+                localStorage.setItem('tasks', JSON.stringify(data.tasks));
+                localStorage.setItem('pomodoroHistory', JSON.stringify(data.history));
+                localStorage.setItem('settings', JSON.stringify(data.settings));
+            }
+
+
+            // --- UI & APP INITIALIZATION ---
+            function initializeAppUI() {
+                switchMode(currentMode);
+                renderTasks();
+                // any other UI updates based on loaded data
+            }
+
+            function showLoginPage() { dom.appContainer.classList.add('hidden'); dom.loginPage.classList.remove('hidden'); }
+            function hideLoginPage() { dom.appContainer.classList.remove('hidden'); dom.loginPage.classList.add('hidden'); }
+            function toggleAuthView(e) {
+                e.preventDefault();
+                isLoginView = !isLoginView;
+                dom.authTitle.textContent = isLoginView ? 'Log In' : 'Create Account';
+                dom.emailAuthBtn.textContent = isLoginView ? 'Log In with Email' : 'Sign up with Email';
+                dom.authPromptText.textContent = isLoginView ? "Don't have an account?" : "Already have an account?";
+                dom.authToggleLink.textContent = isLoginView ? 'Create Account' : 'Log in';
+                dom.authError.classList.add('hidden');
+            }
 
             // --- THEME LOGIC ---
             const themes = {
@@ -149,11 +421,24 @@
             function handleTimerEnd() {
                 clearInterval(timerInterval); playSound();
                 if (currentMode === 'pomodoro') {
+                    pomodorosSinceLongBreak++;
                     history.push({ timestamp: new Date().toISOString(), duration: settings.pomodoro });
-                    localStorage.setItem('pomodoroHistory', JSON.stringify(history));
+                    saveData();
                     dom.postSessionModal.classList.remove('hidden'); dom.postSessionModal.classList.add('flex');
-                } else { switchMode('pomodoro'); }
+                    if (settings.autoStartBreaks) { startNextSession(); }
+                } else {
+                    if (settings.autoStartPomodoros) { switchMode('pomodoro'); startTimer(); } 
+                    else { switchMode('pomodoro'); }
+                }
             }
+
+            function startNextSession() {
+                dom.postSessionModal.classList.add('hidden');
+                const nextMode = pomodorosSinceLongBreak > 0 && pomodorosSinceLongBreak % settings.longBreakInterval === 0 ? 'long' : 'short';
+                switchMode(nextMode);
+                startTimer();
+            }
+
             function startTimer() { if(timeLeft <= 0) return; isRunning = true; dom.startBtn.textContent = 'Pause'; timerInterval = setInterval(() => { timeLeft--; updateTimerDisplay(); if (timeLeft <= 0) { handleTimerEnd(); } }, 1000); }
             function pauseTimer() { isRunning = false; dom.startBtn.textContent = 'Start'; clearInterval(timerInterval); }
             function resetTimer() { pauseTimer(); timeLeft = settings[currentMode] * 60; updateTimerDisplay(); }
@@ -173,48 +458,60 @@
                 });
             }
             window.selectTask = (id) => { currentTaskId = id; const selectedTask = tasks.find(t => t.id === id); dom.currentTaskDisplay.textContent = selectedTask ? selectedTask.text : 'Time to focus!'; renderTasks(); }
-            function toggleTaskCompletion(id) { tasks = tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task); localStorage.setItem('tasks', JSON.stringify(tasks)); renderTasks(); }
+            function toggleTaskCompletion(id) { tasks = tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task); saveData(); renderTasks(); }
             function showTaskForm() { dom.addTaskForm.classList.remove('hidden'); dom.addTaskBtn.classList.add('hidden'); dom.taskInput.focus(); }
             function hideTaskForm() { dom.addTaskForm.classList.add('hidden'); dom.addTaskBtn.classList.remove('hidden'); dom.taskInput.value = ''; }
-            function addTask() { const text = dom.taskInput.value.trim(); if(text) { const newTask = { id: Date.now(), text, completed: false }; tasks.push(newTask); localStorage.setItem('tasks', JSON.stringify(tasks)); if (!currentTaskId) selectTask(newTask.id); renderTasks(); hideTaskForm(); } }
+            function addTask() { const text = dom.taskInput.value.trim(); if(text) { const newTask = { id: Date.now(), text, completed: false }; tasks.push(newTask); if (!currentTaskId) selectTask(newTask.id); saveData(); renderTasks(); hideTaskForm(); } }
 
             // --- SETTINGS LOGIC ---
-            function openSettings() { dom.pomodoroDurationInput.value = settings.pomodoro; dom.shortDurationInput.value = settings.short; dom.longDurationInput.value = settings.long; dom.settingsModal.classList.remove('hidden'); dom.settingsModal.classList.add('flex'); }
+            function openSettings() { 
+                dom.pomodoroDurationInput.value = settings.pomodoro; 
+                dom.shortDurationInput.value = settings.short; 
+                dom.longDurationInput.value = settings.long;
+                dom.autoStartBreaksInput.checked = settings.autoStartBreaks;
+                dom.autoStartPomodorosInput.checked = settings.autoStartPomodoros;
+                dom.longBreakIntervalInput.value = settings.longBreakInterval;
+                dom.alarmSoundInput.value = settings.alarmSound;
+                dom.settingsModal.classList.remove('hidden'); dom.settingsModal.classList.add('flex'); 
+            }
             function closeSettings() { dom.settingsModal.classList.add('hidden'); dom.settingsModal.classList.remove('flex'); }
-            function saveSettings() { settings.pomodoro = parseInt(dom.pomodoroDurationInput.value, 10) || 25; settings.short = parseInt(dom.shortDurationInput.value, 10) || 5; settings.long = parseInt(dom.longDurationInput.value, 10) || 15; localStorage.setItem('settings', JSON.stringify(settings)); closeSettings(); switchMode(currentMode); }
+            function saveSettings() { 
+                settings.pomodoro = parseInt(dom.pomodoroDurationInput.value, 10) || 25; 
+                settings.short = parseInt(dom.shortDurationInput.value, 10) || 5; 
+                settings.long = parseInt(dom.longDurationInput.value, 10) || 15;
+                settings.autoStartBreaks = dom.autoStartBreaksInput.checked;
+                settings.autoStartPomodoros = dom.autoStartPomodorosInput.checked;
+                settings.longBreakInterval = parseInt(dom.longBreakIntervalInput.value, 10) || 4;
+                settings.alarmSound = dom.alarmSoundInput.value;
+                saveData();
+                closeSettings(); 
+                switchMode(currentMode); 
+            }
 
             // --- REPORTING LOGIC ---
             function updateReport() {
                 const totalMinutes = history.reduce((sum, record) => sum + record.duration, 0);
                 dom.hoursFocused.textContent = (totalMinutes / 60).toFixed(1);
-
                 const uniqueDays = new Set(history.map(record => record.timestamp.split('T')[0]));
                 dom.daysAccessed.textContent = uniqueDays.size;
-
                 const stats = JSON.parse(localStorage.getItem('userStats')) || { streak: 0, lastLogin: ''};
                 dom.dayStreak.textContent = stats.streak;
-                
                 generateFocusChart();
             }
             function generateFocusChart() {
                 const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                 const weeklyData = new Array(7).fill(0);
                 const today = new Date();
-                const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
-
+                const firstDayOfWeek = new Date(new Date().setDate(today.getDate() - today.getDay()));
                 history.forEach(record => {
                     const recordDate = new Date(record.timestamp);
-                    if (recordDate >= firstDayOfWeek) {
-                        weeklyData[recordDate.getDay()] += record.duration;
-                    }
+                    if (recordDate >= firstDayOfWeek) { weeklyData[recordDate.getDay()] += record.duration; }
                 });
-
-                const maxMinutes = Math.max(...weeklyData);
+                const maxMinutes = Math.max(1, ...weeklyData);
                 dom.focusChartContainer.innerHTML = '';
-
                 dayLabels.forEach((day, index) => {
                     const minutes = weeklyData[index];
-                    const barHeight = maxMinutes > 0 ? (minutes / maxMinutes) * 100 : 0;
+                    const barHeight = (minutes / maxMinutes) * 100;
                     const barEl = document.createElement('div');
                     barEl.className = 'flex flex-col items-center justify-end h-full w-1/7';
                     barEl.innerHTML = `<div class="chart-bar w-3/4" style="height: ${barHeight}%"></div><p class="text-xs text-gray-500 mt-2">${day}</p>`;
@@ -223,28 +520,23 @@
             }
             
             // --- AUDIO & INIT ---
-            function playSound() { const synth = new Tone.Synth().toDestination(); synth.triggerAttackRelease("C5", "0.5"); }
-            function initializeApp() {
-                if (localStorage.getItem('preSessionFormCompleted') !== 'true') { dom.preSessionModal.classList.remove('hidden'); dom.preSessionModal.classList.add('flex'); }
-                
-                const todayStr = new Date().toISOString().split('T')[0];
-                const stats = JSON.parse(localStorage.getItem('userStats')) || { streak: 0, lastLogin: ''};
-                if (stats.lastLogin !== todayStr) {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    const yesterdayStr = yesterday.toISOString().split('T')[0];
-                    if (stats.lastLogin === yesterdayStr) {
-                        stats.streak++;
-                    } else {
-                        stats.streak = 1;
-                    }
-                    stats.lastLogin = todayStr;
-                    localStorage.setItem('userStats', JSON.stringify(stats));
-                }
-                switchMode('pomodoro'); renderTasks();
+            function playSound() { 
+                 const sounds = {
+                    bell: () => new Tone.Synth().toDestination().triggerAttackRelease("C5", "0.5"),
+                    bird: () => new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 } }).toDestination().triggerAttackRelease("G5", "0.2"),
+                    digital: () => new Tone.MembraneSynth().toDestination().triggerAttackRelease("C4", "8n")
+                };
+                sounds[settings.alarmSound]();
             }
-
+            
             // --- EVENT LISTENERS ---
+            dom.signInBtn.addEventListener('click', showLoginPage);
+            dom.logoutBtn.addEventListener('click', logOut);
+            dom.closeLoginBtn.addEventListener('click', hideLoginPage);
+            dom.authToggleLink.addEventListener('click', toggleAuthView);
+            dom.googleSigninBtn.addEventListener('click', signInWithGoogle);
+            dom.emailAuthBtn.addEventListener('click', handleEmailAuth);
+            
             dom.startBtn.addEventListener('click', () => isRunning ? pauseTimer() : startTimer());
             dom.modePomodoroBtn.addEventListener('click', () => switchMode('pomodoro'));
             dom.modeShortBtn.addEventListener('click', () => switchMode('short'));
@@ -257,11 +549,16 @@
             dom.closeSettingsBtn.addEventListener('click', closeSettings);
             dom.saveSettingsBtn.addEventListener('click', saveSettings);
             dom.continueAppBtn.addEventListener('click', () => { dom.preSessionModal.classList.add('hidden'); localStorage.setItem('preSessionFormCompleted', 'true'); });
-            dom.startBreakBtn.addEventListener('click', () => { dom.postSessionModal.classList.add('hidden'); switchMode('short'); });
+            dom.startBreakBtn.addEventListener('click', () => { 
+                dom.postSessionModal.classList.add('hidden');
+                if (settings.autoStartBreaks) return;
+                startNextSession();
+            });
             dom.reportBtn.addEventListener('click', () => { updateReport(); dom.reportModal.classList.remove('hidden'); dom.reportModal.classList.add('flex'); });
             dom.closeReportBtn.addEventListener('click', () => dom.reportModal.classList.add('hidden'));
 
-            initializeApp();
+            // Final check for first-time form
+            if (localStorage.getItem('preSessionFormCompleted') !== 'true') { dom.preSessionModal.classList.remove('hidden'); dom.preSessionModal.classList.add('flex'); }
         });
     </script>
 </body>
